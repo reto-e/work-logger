@@ -1,14 +1,20 @@
+#include <SPI.h>
+#include<WiFiNINA.h>
 
-/*
-Reads values from a potentiometer and displays them in serial monitor
+// ----------------------------------------------------------------------------
+// Variables
+// ----------------------------------------------------------------------------
 
-*/
-
-const int potPin = A1; // eingang Poti
-int val = 0;
-int current_position = 20; // current position
-int new_position;         // position read from poti
-int stable_count = 0;         // counts how many times current and new position are the same;
+const int potPin = A1;          // eingang Poti
+int val = 0;                    // Value des Poti, wird in Position umgerechnet
+int current_position;           // current position
+int new_position;               // position read from poti
+int stable_count = 0;           // counts how many times current and new position are the same;
+char ssid[] = "ZyXEL7B6150";    // your network SSID (name)
+char pass[] = "7UH9A3YJHKPEN";  // your network password (use for WPA, or use as key for WEP)
+char server[] = "docs.google.com"; // google forms server
+int status = WL_IDLE_STATUS;    // 
+WiFiSSLClient client;           // client object which does the calls
 
 String jobs[10] = { 
   "Admin", 
@@ -22,7 +28,9 @@ String jobs[10] = {
   "Pause"
 };
 
-
+// ----------------------------------------------------------------------------
+// Functions
+// ----------------------------------------------------------------------------
 /*
 reads voltage from the poti and returns the position of the pointer
 */
@@ -40,25 +48,61 @@ int calculate_position(int val) {
   return position;
 }
 
+
 /*
 Defines job strings for sending to backend
 */
 String storeWork(int pos) {
   Serial.print("storing job ");
   Serial.println(jobs[pos]);
-  return "ok";
-  
+  String jobdata = jobs[pos];
+  jobdata.replace(" ", "%20");
+  if (client.connectSSL(server, 443)) {
+    client.print("GET http://docs.google.com/forms/d/e/1FAIpQLSdo4mZ-P4LfauRNjesSDceLhdNDUcVl5QPq9StZG6vIGjwQng/formResponse?entry.1030855005=");
+    client.print(jobdata);
+    client.println(" HTTP/1.1");
+    client.println("Host: docs.google.com");
+    client.println("Cache-Control: no-cache");
+    client.println("Connection: close");
+    client.println();
+    }
+
+    return "ok";
 }
 
+// ----------------------------------------------------------------------------
+// Setup
+// ----------------------------------------------------------------------------
 void setup() {
   pinMode(potPin, INPUT);
   Serial.begin(9600);
+   while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  
+  // attempt to connect to Wifi network:
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid, pass);
+
+    // wait 10 seconds for connection:
+    delay(7000);
+  }
+  Serial.println("Connected to wifi");
+  
   current_position = -1;
     
 }
 
+// ----------------------------------------------------------------------------
+// Loop
+// ----------------------------------------------------------------------------
+
 void loop() {
-  int val = analogRead(potPin); 
+  val = analogRead(potPin); 
+  Serial.println(val);
   new_position = calculate_position(val);
 
   if (new_position != current_position) {
