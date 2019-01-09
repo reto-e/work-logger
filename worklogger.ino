@@ -10,8 +10,8 @@ int val = 0;                    // Value des Poti, wird in Position umgerechnet
 int current_position;           // current position
 int new_position;               // position read from poti
 int stable_count = 0;           // counts how many times current and new position are the same;
-char ssid[] = "ZyXEL7B6150";    // your network SSID (name)
-char pass[] = "7UH9A3YJHKPEN";  // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "AndroidAP4750";    // your network SSID (name)
+char pass[] = "aaf06d16f711";  // your network password (use for WPA, or use as key for WEP)
 char server[] = "docs.google.com"; // google forms server
 int status = WL_IDLE_STATUS;    // 
 WiFiSSLClient client;           // client object which does the calls
@@ -76,10 +76,7 @@ String storeWork(int pos) {
 void setup() {
   pinMode(potPin, INPUT);
   Serial.begin(9600);
-   while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-  
+    
   // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to SSID: ");
