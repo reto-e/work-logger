@@ -16,13 +16,15 @@ char server[] = "docs.google.com"; // google forms server
 int status = WL_IDLE_STATUS;    // 
 WiFiSSLClient client;           // client object which does the calls
 
-String jobs[10] = { 
-  "Admin", 
-  "Coordination", 
-  "Backlog Grooming", 
-  "Analysis",
-  "Testing",
-  "Documentation",
+String jobs[11] = { 
+  "Con Admin", 
+  "Con Testing", 
+  "Con Analysis", 
+  "Con Coord",
+  "Z Admin",
+  "Z Coord",
+  "Z Analysis",
+  "Z Testing",
   "I10000",
   "I15000",
   "Pause"
@@ -35,16 +37,19 @@ String jobs[10] = {
 reads voltage from the poti and returns the position of the pointer
 */
 int calculate_position(int val) {
-  int position = 0;
-  if(val > 45 && val <= 166) position = 1;
-  if(val > 166 && val <= 278) position = 2;
-  if(val > 278 && val <= 383) position = 3;
-  if(val > 383 && val <= 524) position = 4;
-  if(val > 524 && val <= 647) position = 5;
-  if(val > 647 && val <= 769) position = 6;
-  if(val > 769 && val <= 885) position = 7;
-  if(val > 885 && val <= 981) position = 8;
-  if(val > 981) position = 9;
+  int position = 10;
+  if(val < 20) position = 0;
+  else if(val < 96) position = 1;
+  else if(val < 213) position = 2;
+  else if(val < 316) position = 3;
+  else if(val < 458) position = 4;
+  else if(val < 598) position = 5;
+  else if(val < 721) position = 6;
+  else if(val < 838) position = 7;
+  else if(val < 936) position = 8;
+  else if(val < 1010) position = 9;
+  else position = 10;
+  
   return position;
 }
 
