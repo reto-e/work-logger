@@ -1,6 +1,13 @@
 #include <SPI.h>
 #include<WiFiNINA.h>
 
+// display includes
+#include <fonts.h>
+#include <epdpaint.h>
+#include <epd2in13b.h>
+#include <epdif.h>
+
+
 // ----------------------------------------------------------------------------
 // Variables
 // ----------------------------------------------------------------------------
@@ -15,6 +22,18 @@ char pass[] = "aaf06d16f711";  // your network password (use for WPA, or use as 
 char server[] = "docs.google.com"; // google forms server
 int status = WL_IDLE_STATUS;    // 
 WiFiSSLClient client;           // client object which does the calls
+
+//
+int timer = 0;
+char progress_bar[13] = "[..........]";
+#define COLORED   0
+#define UNCOLORED 1
+
+unsigned char image[1024];
+Paint paint(image, 28,192);    //width should be the multiple of 8 
+Epd epd;
+
+
 
 String jobs[11] = { 
   "Con Admin", 
@@ -72,18 +91,57 @@ String storeWork(int pos) {
     client.println();
     }
 
+    drawString(jobdata);
     return "ok";
 }
+
+/*
+ * Draw String on EPD display
+ */
+void drawString(String jobdata) {
+  // replace %20
+  jobdata.replace('%',' ');
+  jobdata.replace('2',' ');
+  jobdata.replace('0',' ');
+  
+  // convert String to char Array
+  char jobchars[30];
+  jobdata.toCharArray(jobchars,30);
+  
+  epd.ClearFrame();
+  paint.SetRotate(ROTATE_90);
+
+  paint.Clear(UNCOLORED);
+  paint.DrawStringAt(8, 2, jobchars, &Font16, COLORED);
+  epd.SetPartialWindowBlack(paint.GetImage(), 60, 8, paint.GetWidth(), paint.GetHeight());
+
+  epd.DisplayFrame();
+};
+
+
+
 
 // ----------------------------------------------------------------------------
 // Setup
 // ----------------------------------------------------------------------------
 void setup() {
+
+ 
   pinMode(potPin, INPUT);
   Serial.begin(9600);
+  delay(1000);
+
+Serial.println("init Display");
+  // initilize Display
+ 
+ if (epd.Init() != 0) {
+    Serial.print("e-Paper init failed");
+    return;
+  }
     
   // attempt to connect to Wifi network:
   while (status != WL_CONNECTED) {
+     
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
@@ -95,6 +153,9 @@ void setup() {
   Serial.println("Connected to wifi");
   
   current_position = -1;
+
+  // init display
+  // initDisplay();
     
 }
 
