@@ -24,16 +24,16 @@ int status = WL_IDLE_STATUS;    //
 WiFiSSLClient client;           // client object which does the calls
 
 //
-int timer = 0;
-char progress_bar[13] = "[..........]";
+unsigned long start_time;       // stores millis, used to update progress bar
+char progress_bar[9] = "[......]"; // progress bar
+int progress_bar_pos = 1;
+
 #define COLORED   0
 #define UNCOLORED 1
 
 unsigned char image[1024];
 Paint paint(image, 28,192);    //width should be the multiple of 8 
 Epd epd;
-
-
 
 String jobs[11] = { 
   "Con Admin", 
@@ -90,13 +90,25 @@ String storeWork(int pos) {
     client.println("Connection: close");
     client.println();
     }
+    // set start time for progress_bar timer
+    start_time = millis();
 
+    // reset progress Bar
+    for (int i = 1; i < 7; i++) {
+      progress_bar[i] = '.';
+      }
+    progress_bar_pos = 1;
+
+      
+     
     drawString(jobdata);
+
+    // drawProgressBar(); //TODO: uncomment if new display is super fast updating
     return "ok";
 }
 
 /*
- * Draw String on EPD display
+ * Draw String on EPD
  */
 void drawString(String jobdata) {
   // replace %20
@@ -111,13 +123,37 @@ void drawString(String jobdata) {
 
   paint.Clear(UNCOLORED);
   paint.DrawStringAt(8, 2, jobchars, &Font16, COLORED);
-  epd.SetPartialWindowBlack(paint.GetImage(), 60, 8, paint.GetWidth(), paint.GetHeight());
+  epd.SetPartialWindowBlack(paint.GetImage(), 50, 16, paint.GetWidth(), paint.GetHeight());
 
   epd.DisplayFrame();
 };
 
+/*
+ * draw progress bar on EPD
+ */
+void drawProgressBar() {
+  paint.Clear(UNCOLORED);
+  paint.DrawStringAt(8,2, progress_bar, &Font16, COLORED);
+  epd.SetPartialWindowBlack(paint.GetImage(), 20, 16, paint.GetWidth(), paint.GetHeight());
+  epd.DisplayFrame();
+}
 
-
+/*
+ * update progress_bar string
+ */
+ void updateProgressBar() {
+  // calculate time_past
+  if (millis() - start_time > 300000) { //do stuff every 5 minutes
+    if (progress_bar_pos < 7) {
+      progress_bar[progress_bar_pos] = '=';
+      progress_bar_pos++;
+      drawProgressBar();
+      }
+    start_time = millis();  // reset time to current
+    
+    }
+  
+ }
 
 // ----------------------------------------------------------------------------
 // Setup
@@ -177,11 +213,14 @@ void loop() {
   stable_count++;
 
   // Debug block
-  Serial.print(new_position);
-  Serial.print("\t");
-  Serial.print(current_position);
-  Serial.print("\t");
-  Serial.println(stable_count);
+//  Serial.print(new_position);
+//  Serial.print("\t");
+//  Serial.print(current_position);
+//  Serial.print("\t");
+//  Serial.println(stable_count);
+
+  // update progress bar
+  updateProgressBar();
 
   delay(1000);
 }
