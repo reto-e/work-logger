@@ -100,9 +100,7 @@ String storeWork(int pos) {
  */
 void drawString(String jobdata) {
   // replace %20
-  jobdata.replace('%',' ');
-  jobdata.replace('2',' ');
-  jobdata.replace('0',' ');
+  jobdata.replace("%20", " ");
   
   // convert String to char Array
   char jobchars[30];
