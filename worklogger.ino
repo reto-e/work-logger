@@ -13,7 +13,8 @@
 // ----------------------------------------------------------------------------
 
 const int potPin = A1;          // eingang Poti
-int val = 0;                    // Value des Poti, wird in Position umgerechnet
+int pot_val = 0;                // Value des Poti, wird in Position umgerechnet
+int pot_val_sum = 0;            // sum of 10 measures of pot_val
 int current_position;           // current position
 int new_position;               // position read from poti
 int stable_count = 0;           // counts how many times current and new position are the same;
@@ -55,7 +56,7 @@ String jobs[11] = {
 /*
 reads voltage from the poti and returns the position of the pointer
 */
-int calculate_position(int val) {
+int calculate_position(float val) {
   int position = 10;
   if(val < 20) position = 0;
   else if(val < 96) position = 1;
@@ -198,9 +199,18 @@ Serial.println("init Display");
 // ----------------------------------------------------------------------------
 
 void loop() {
-  val = analogRead(potPin); 
-  Serial.println(val);
-  new_position = calculate_position(val);
+  //val = analogRead(potPin); 
+  for (int i = 0; i < 10; i++) {
+    pot_val = analogRead(potPin);
+    pot_val_sum = pot_val_sum + pot_val;
+  }
+  float flat_pot_val = pot_val_sum/10;
+
+  pot_val_sum = 0; // reset to 0 for next loop.
+
+  
+  Serial.println(flat_pot_val);
+  new_position = calculate_position(flat_pot_val);
 
   if (new_position != current_position) {
     stable_count = 0;
